@@ -57,15 +57,15 @@ function s.initial_effect(c)
 end
 
 -- (1) SS Condition
-function s.spconfilter(c)
-    return c:IsFaceup() and not c:IsRace(RACE_MACHINE)
-end
-function s.spcon(e,c)
-    if c==nil then return true end
-    local tp=e:GetHandlerPlayer()
-    return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-        and not Duel.IsExistingMatchingCard(s.spconfilter,tp,LOCATION_MZONE,0,1,nil)
-end
+-- function s.spconfilter(c)
+--     return c:IsFaceup() and not c:IsRace(RACE_MACHINE)
+-- end
+-- function s.spcon(e,c)
+--     if c==nil then return true end
+--     local tp=e:GetHandlerPlayer()
+--     return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+--         and not Duel.IsExistingMatchingCard(s.spconfilter,tp,LOCATION_MZONE,0,1,nil)
+-- end
 
 -- (2) Errata Search/Bounce logic
 function s.thfilter(c)
