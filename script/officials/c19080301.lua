@@ -16,7 +16,7 @@ s.listed_series={0x1908, 0x17b}
 s.listed_names={id}
 
 function s.initial_effect(c)
-    StellaRegis.AddProcedure(c, id)
+    StellaRegis.AddProcedure(c, id, 4)
     -- (1) Special Summon from hand
     -- local e1=Effect.CreateEffect(c)
     -- e1:SetDescription(aux.Stringid(id,0))
