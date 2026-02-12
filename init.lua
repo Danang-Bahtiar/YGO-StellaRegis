@@ -1,0 +1,1 @@
+Duel.LoadScript("proc_stella.lua")
