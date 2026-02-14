@@ -1,0 +1,18 @@
+
+[    {
+      "url": "",
+      "repo_name": "Stella Development",
+      "repo_path": "./repositories/stella-regis",
+      "not_git_repo": true,
+      "should_read": true,
+      "data_path": "",
+      "script_path": "stella-script",
+      "pics_path": "pics"
+    },
+    {
+      "url": "https://github.com/Lahrenheit/EDOPRO-Skinpack",
+      "repo_name": "Lahrenheit EDOPro Skinpack",
+      "repo_path": "./skin/",
+      "should_update": false,
+      "should_read": true
+    }]

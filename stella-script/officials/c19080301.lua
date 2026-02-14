@@ -16,17 +16,8 @@ s.listed_series={0x1908, 0x17b}
 s.listed_names={id}
 
 function s.initial_effect(c)
+    --Special Summon this card (from your hand)
     StellaRegis.AddProcedure(c, id, 4)
-    -- (1) Special Summon from hand
-    -- local e1=Effect.CreateEffect(c)
-    -- e1:SetDescription(aux.Stringid(id,0))
-    -- e1:SetType(EFFECT_TYPE_FIELD)
-    -- e1:SetCode(EFFECT_SPSUMMON_PROC)
-    -- e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
-    -- e1:SetRange(LOCATION_HAND)
-    -- e1:SetCountLimit(1,id,EFFECT_COUNT_CODE_OATH)
-    -- e1:SetCondition(s.spcon)
-    -- c:RegisterEffect(e1)
 
     -- (2) Normal or Special Summon: Search or (Bounce & Draw)
     local e2=Effect.CreateEffect(c)
@@ -44,42 +35,32 @@ function s.initial_effect(c)
     c:RegisterEffect(e3)
 
     -- (3) Equip from GY
-    local e4=Effect.CreateEffect(c)
-    e4:SetDescription(aux.Stringid(id,2))
-    e4:SetCategory(CATEGORY_EQUIP)
-    e4:SetType(EFFECT_TYPE_IGNITION)
-    e4:SetRange(LOCATION_GRAVE)
-    e4:SetProperty(EFFECT_FLAG_CARD_TARGET)
-    e4:SetCountLimit(1,{id,2})
-    e4:SetTarget(s.eqtg)
-    e4:SetOperation(s.eqop)
-    c:RegisterEffect(e4)
+    -- Add (c) to each function in the table so they execute and return the effect
+    StellaRegis.AddEquipProcedure(c, id, {StellaRegis.GrantPiercing(c), s.grantswap(c)})
 end
-
--- (1) SS Condition
--- function s.spconfilter(c)
---     return c:IsFaceup() and not c:IsRace(RACE_MACHINE)
--- end
--- function s.spcon(e,c)
---     if c==nil then return true end
---     local tp=e:GetHandlerPlayer()
---     return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
---         and not Duel.IsExistingMatchingCard(s.spconfilter,tp,LOCATION_MZONE,0,1,nil)
--- end
 
 -- (2) Errata Search/Bounce logic
 function s.thfilter(c)
     return c:IsSetCard(0x1908) and c:IsLevel(4) and not c:IsCode(id) and c:IsAbleToHand()
 end
+
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     local c=e:GetHandler()
+
     if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsAbleToHand() end
+
+    -- option 1: Search
     local b1=Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil)
+    -- option 2: Bounce + Draw 1
     local b2=c:IsSpecialSummoned() and Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsRace,RACE_MACHINE),tp,LOCATION_MZONE,0,1,c)
         and Duel.IsExistingTarget(Card.IsAbleToHand,tp,0,LOCATION_MZONE,1,nil)
+
     if chk==0 then return b1 or b2 end
+
     local op=Duel.SelectEffect(tp, {b1, aux.Stringid(id,3)}, {b2, aux.Stringid(id,4)})
+
     e:SetLabel(op)
+
     if op==1 then
         e:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
         Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
@@ -91,19 +72,12 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
         Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
     end
 end
+
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
     local c=e:GetHandler()
     local op=e:GetLabel()
-    -- Universal Lock
-    local e1=Effect.CreateEffect(c)
-    e1:SetType(EFFECT_TYPE_FIELD)
-    e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
-    e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_CLIENT_HINT)
-    e1:SetDescription(aux.Stringid(id,5))
-    e1:SetTargetRange(1,0)
-    e1:SetTarget(s.splimit)
-    e1:SetReset(RESET_PHASE+PHASE_END)
-    Duel.RegisterEffect(e1,tp)
+    StellaRegis.ApplyLevelLock(c, tp)
+
     if op==1 then
         Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
         local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
@@ -113,69 +87,18 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
         if tc and tc:IsRelateToEffect(e) and Duel.SendtoHand(tc,nil,REASON_EFFECT)>0 then Duel.Draw(tp,1,REASON_EFFECT) end
     end
 end
-function s.splimit(e,c) return not (c:IsLevel(4,8) or c:IsRank(4,8)) end
 
 -- (3) Equip logic
-function s.eqfilter(c)
-    return c:IsFaceup() and (c:IsSetCard(0x1908) or c:IsSetCard(0x17b))
-end
-function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-    if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.eqfilter(chkc) end
-    if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-        and Duel.IsExistingTarget(s.eqfilter,tp,LOCATION_MZONE,0,1,nil) end
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
-    Duel.SelectTarget(tp,s.eqfilter,tp,LOCATION_MZONE,0,1,1,nil)
-    Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
-end
-
-function s.eqop(e,tp,eg,ep,ev,re,r,rp)
-    local c=e:GetHandler()
-    local tc=Duel.GetFirstTarget()
-    if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-        if Duel.Equip(tp,c,tc) then
-            -- Equip limit
-            local e1=Effect.CreateEffect(c)
-            e1:SetType(EFFECT_TYPE_SINGLE)
-            e1:SetCode(EFFECT_EQUIP_LIMIT)
-            e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
-            e1:SetValue(s.eqlimit)
-            e1:SetReset(RESET_EVENT+RESETS_STANDARD)
-            c:RegisterEffect(e1)
-            
-            -- (4) Granted Effects to the TARGET (tc)
-            -- Piercing
-            local e2=Effect.CreateEffect(c)
-            e2:SetType(EFFECT_TYPE_SINGLE)
-            e2:SetCode(EFFECT_PIERCE)
-            e2:SetReset(RESET_EVENT+RESETS_STANDARD)
-            e2:SetCondition(s.grantcon)
-            tc:RegisterEffect(e2)
-            
-            -- Ignition: Granted to the Monster
-            local e3=Effect.CreateEffect(c)
-            e3:SetDescription(aux.Stringid(id,6))
-            e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON)
-            e3:SetType(EFFECT_TYPE_IGNITION)
-            e3:SetRange(LOCATION_MZONE)
-            -- IMPORTANT: Use a different ID offset for the granted effect's Count Limit
-            -- This prevents it from conflicting with the monster's original HOPT.
-            e3:SetCountLimit(1,{id+100,1}) 
-            e3:SetTarget(s.sptg2)
-            e3:SetOperation(s.spop2)
-            e3:SetReset(RESET_EVENT+RESETS_STANDARD)
-            e3:SetCondition(s.grantcon)
-            tc:RegisterEffect(e3)
-        end
-    end
-end
-
-function s.eqlimit(e,c)
-    return c:IsSetCard(0x1908) or c:IsSetCard(0x17b)
-end
-
--- (4) Grant Logic (Helper functions)
-function s.grantcon(e)
-    return e:GetHandler():GetEquipGroup():IsExists(Card.IsCode,1,nil,id)
+function s.grantswap(c)
+    local e=Effect.CreateEffect(c)
+    e:SetDescription(aux.Stringid(id,6))
+    e:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON)
+    e:SetType(EFFECT_TYPE_IGNITION)
+    e:SetRange(LOCATION_MZONE)
+    e:SetCountLimit(1,{id+100,1}) 
+    e:SetTarget(s.sptg2)
+    e:SetOperation(s.spop2)
+    return e
 end
 
 function s.rtfilter(c)

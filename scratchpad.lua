@@ -1,0 +1,1 @@
+StellaRegis.AddEquipProcedure(c, id, StellaRegis.GrantProtectionEffect(c), s.omnineg(c))
