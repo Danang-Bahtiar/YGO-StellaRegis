@@ -8,7 +8,7 @@
 -- (3) If this card is in your Graveyard: you can target 1 "Stella-Regis" or "Therion" monster on your field; Equip this card to that target as an Equip Spell.
 -- (4) "Stella-Regis" or "Therion" monster equipped with this card gain following effect:
 -- • The equipped can make a second attack during each Battle Phase.
--- • Once per turn during your Main Phase, return "Stella-Regis" card from Field or GY up to number of "Stella-Regis" monster equipped to monster(s); Banish equal number of card(s) from your Opponent's GY.
+-- • Once per turn during your Main Phase, return "Stella-Regis" card from Field or GY up to number of "Stella-Regis" monster equipped to monster(s) to your Deck; Banish equal number of card(s) from your Opponent's GY.
 
 local s, id = GetID()
 s.listed_series={0x1908, 0x17b}
@@ -109,34 +109,49 @@ function s.eqfilter(c)
     return c:IsSetCard(0x1908) and c:IsType(TYPE_MONSTER) and c:IsLocation(LOCATION_SZONE)
 end
 
+-- (4) Granted Effect: Return to Deck & Banish
 function s.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
-    -- Simplified count: just check cards in SZone that are SetCard Stella-Regis
+    -- 1. Count "Stella-Regis" monsters currently in the Spell/Trap Zone (equipped)
     local count=Duel.GetMatchingGroupCount(aux.FaceupFilter(Card.IsSetCard,0x1908),tp,LOCATION_SZONE,0,nil)
-    if chk==0 then return count>0 
-        and Duel.IsExistingMatchingCard(Card.IsSetCard,tp,LOCATION_GRAVE+LOCATION_ONFIELD,0,1,nil,0x1908) end
+    
+    -- 2. Check if Opponent has cards in GY to banish
+    local opp_gy=Duel.GetMatchingGroupCount(Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,nil)
+
+    if chk==0 then 
+        return count>0 
+        and opp_gy>0 -- Must have at least 1 target in opponent's GY to activate
+        and Duel.IsExistingMatchingCard(Card.IsSetCard,tp,LOCATION_GRAVE+LOCATION_ONFIELD,0,1,nil,0x1908) 
+    end
     
     Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,tp,LOCATION_GRAVE+LOCATION_ONFIELD)
-    -- We don't SetOperationInfo for REMOVE here because it depends on how many return to deck
+    Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,1-tp,LOCATION_GRAVE)
 end
 
 function s.recop(e,tp,eg,ep,ev,re,r,rp)
     local count=Duel.GetMatchingGroupCount(aux.FaceupFilter(Card.IsSetCard,0x1908),tp,LOCATION_SZONE,0,nil)
-    if count==0 then return end
+    local opp_gy=Duel.GetMatchingGroup(Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,nil)
+    
+    if count==0 or #opp_gy==0 then return end
     
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
-    -- Filter out the monster actually using the effect to avoid illegal board states
+    -- Select up to 'count' cards to return to deck
     local g=Duel.SelectMatchingCard(tp,Card.IsSetCard,tp,LOCATION_GRAVE+LOCATION_ONFIELD,0,1,count,e:GetHandler(),0x1908)
     
     if #g>0 then
         Duel.HintSelection(g)
+        -- Explicitly return to Deck (SEQ_DECKSHUFFLE ensures it shuffles in)
         local ct=Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+        
         if ct>0 then
+            -- Shuffle is handled by SEQ_DECKSHUFFLE, but forced here for engine safety
             Duel.ShuffleDeck(tp)
-            -- Check if opponent has cards to banish
+            
+            -- Re-check opponent's GY count based on how many actually returned
             local rg=Duel.GetMatchingGroup(Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,nil)
             if #rg>0 then
                 Duel.BreakEffect()
                 Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+                -- Select equal number to cards returned (ct)
                 local sg=rg:Select(tp,1,ct,nil)
                 Duel.Remove(sg,POS_FACEUP,REASON_EFFECT)
             end

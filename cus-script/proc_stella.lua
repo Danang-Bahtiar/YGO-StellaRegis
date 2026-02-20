@@ -21,9 +21,9 @@ end
 -- Condition for Level 8
 function StellaRegis.EightCondition(e,c)
     if c==nil then return true end
-    local tp=e:GetHandlerPlayer()
-    return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-        and Duel.IsExistingMatchingCard(StellaRegis.EightSummonFilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil)
+    local tp=c:GetControler()
+    -- We specify LOCATION_MZONE, 0 to look ONLY at your field
+    return Duel.IsExistingMatchingCard(StellaRegis.EightSummonFilter,tp,LOCATION_MZONE,0,1,nil,tp)
 end
 
 -- Updated Procedure Adder

@@ -1,0 +1,9 @@
+-- Astral Colosseum - Aries' Arboretum
+-- Field Spell
+-- (This card always treated as "Krios-Verna" card)
+-- You can only active "Astral Colosseum - Aries' Arboretum" once per turn.
+-- You can only use the (3)rd and (4)th effect of this card once per turn.
+-- (1) If you control either "Therion "Lily" Borea" or "Krios-Verna "Heliotrope" Hamal", all your Plant-type monster gain 400 ATK for each Plant-type monster on the field.
+-- (2) All monster on the field and GY become Plant monsters.
+-- (3) If a card(s) on the field is Tributed or sent to GY as Synchro Material, you can add 1 "Krios-Verna" or "Therion" monster from GY or Banishement to your hand or Special Summon 1 "Krios-Verna" monster from your Deck but negate its effect until the end of this turn.
+-- (4) During the Battle Phase (Quick Effect): Banish 1 "Krios-Verna" monster from your GY; Special Summon 1 "Therion" or "Krios-Verna" monster from your GY, and if you do, you gain LP equal to its original ATK.

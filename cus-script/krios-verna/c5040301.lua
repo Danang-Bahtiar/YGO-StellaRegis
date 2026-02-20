@@ -1,0 +1,11 @@
+-- Krios-Verna "Heliotrope" Hamal
+-- Level 12 EARTH Plant-type/ Synchro Effect Monster
+-- ATK 3000 / DEF 2000
+-- 1+ Krios-Verna Tuner + 1+ Plant non-Tuner
+-- Must first be Synchro Summoned.
+-- If you control "Therion "Lily" Borea", you can use Plant-Tuner monster in your hand as "Krios-Verna" Tuner monster for Synchro Summoning this card.
+-- You can only use the (1)st and (4)th effect of this card once per turn.
+-- (1) If this card is Synchron Summoned, you can add 1 "Krios-Verna" or "Astral Colosseum" card or "Therion" Spell/Trap card from your Deck or GY to hand.
+-- (2) While you control this face-up card, your opponent cannot target Plant-type monster you control with their card effect(s) and cannot attack monster except this one.
+-- (3) Once per Chain, when card(s) or effect(s) that add card(s) to hand or draw card(s) is resolves: send 1 card equipped to monster on your Field to GY or send 1 Plant-type monster from your hand to GY; negate the effect of that card.
+-- (4) During your Main Phase: you can tribute 1 monster you control; either Special Summon or Equip to this card 1 Plant-type monster from your Deck.
